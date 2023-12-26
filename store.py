@@ -61,6 +61,8 @@ class store(QWidget):
             idx = np.where(self.button_states[t[0]-1:t[0]+2, t[1]-1: t[1]+2] < 9)
             self.button_states[t[0]-1:t[0]+2, t[1]-1: t[1]+2][idx] += 1
 
+        print("blocked")
+
 
 
     def un_block_kernel(self, t):
@@ -77,7 +79,7 @@ class store(QWidget):
         else:
             idx = np.where(self.button_states[t[0]-1:t[0]+2, t[1]-1: t[1]+2] < 9)
             self.button_states[t[0]-1:t[0]+2, t[1]-1: t[1]+2][idx] -= 1
-
+        print("unblocked")
             
             
     def changeState(self):

@@ -157,11 +157,11 @@ class Electrode(QWidget):
         grid_layout.addWidget(btgrid,0,1,0,1,alignment=Qt.AlignTop)
 
 
-        rsr3 = Right_Reservoir(w = 30, h = 30, row = 1, col = 19, store=self.store, color = QColor(0,0,0))
+        rsr3 = Right_Reservoir(w = 30, h = 30, row = 1, col = 19, store=self.store, color = QColor(255,180,0))
         rsr3.setFixedSize(90, 90)
         grid_layout.addWidget(rsr3,0,3,1,1, alignment=Qt.AlignTop)
 
-        rsr4 = Right_Reservoir(w = 30, h = 30, row = 8, col = 19, store=self.store, color = QColor(0, 0,255))
+        rsr4 = Right_Reservoir(w = 30, h = 30, row = 8, col = 19, store=self.store, color = QColor(150, 150, 150))
         rsr4.setFixedSize(90, 90)
         grid_layout.addWidget(rsr4,2,3,1,1, alignment=Qt.AlignTop)
 

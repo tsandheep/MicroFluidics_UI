@@ -10,6 +10,7 @@ import pickle
 from electrode import *
 from store import *
 from cmd_prompt import *
+from xy_plot import *
         
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -45,6 +46,9 @@ class MainWindow(QMainWindow):
         self.cmd = CMD()
         self.tab_widget.addTab(self.cmd, "Command")
 
+        self.plot_widget = XYPlot()
+        self.tab_widget.addTab(self.plot_widget, "Plots")
+
         
         self.layout.addWidget(self.tab_widget, 1,0)
 
@@ -66,6 +70,8 @@ class MainWindow(QMainWindow):
 
         # Create a File menu
         file_menu = menubar.addMenu('File')
+        configure_menu = menubar.addMenu('Configure')
+        help_menu = menubar.addMenu('Help')
 
         # Create a New action
         new_action = QAction('New', self)
