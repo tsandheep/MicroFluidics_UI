@@ -17,9 +17,7 @@ class Cell(QPushButton):
         # cells with sensors, defective cells, 
         #if(self.store.button_states[row][col] )
 
-        self.setStyleSheet("QPushButton { background-color: white }"
-                           "QPushButton:checked {background-color: blue}"
-                           "QPushButton:pressed { background-color: red }")
+        self.setStyleSheet("QPushButton { background-color: %s }"%(self.store.cell_colors["Free-cell"]))
         
     def contextMenuEvent(self, event):
         print(self.row, self.col)
@@ -27,9 +25,9 @@ class Cell(QPushButton):
         
         action1 = menu.addAction("Move Here")
         
-        action2 = menu.addAction("Sensor")
+        action2 = menu.addAction("Sensor-cell")
         action3 = menu.addAction("Dead-cell")
-        action4 = menu.addAction("Normal-cell")
+        action4 = menu.addAction("Free-cell")
 
         selected_action = menu.exec_(self.mapToGlobal(event.pos()))
 
@@ -37,6 +35,8 @@ class Cell(QPushButton):
             if(self.store.selected_cell):
                 from_row = self.store.selected_cell[0]
                 from_col = self.store.selected_cell[1]
+
+ 
                 clr = self.store.button_colors[from_row][from_col]
                 self.store.add_movement(self.store.selected_cell, (self.row, self.col), clr)
                 self.store.selected_cell = None
@@ -44,12 +44,14 @@ class Cell(QPushButton):
             
             
         elif selected_action == action2:
-            print("Sensor")
+            print("Sensor-cell")
             self.setCheckable(False)
             self.setChecked(False)
-            self.setStyleSheet("QPushButton { background-color: '#FFFF00' }"
-                                   "QPushButton:checked {background-color: black}"
-                               "QPushButton:pressed { background-color: black }")
+            self.setStyleSheet("QPushButton { background-color: %s }"%(self.store.cell_colors["Sensor-cell"]))
+            self.store.button_colors[self.row][self.col] = self.store.cell_colors["Sensor-cell"]
+            self.store.sensor_cells[self.row][self.col] = 1
+
+            print(self.store.sensor_cells[0:5, 0:5])
 
 
 
@@ -58,18 +60,15 @@ class Cell(QPushButton):
             print("Dead-cell")
             self.setCheckable(False)
             self.setChecked(False)
-            self.setStyleSheet("QPushButton { background-color: '#BBBBBB' }"
-                               "QPushButton:checked {background-color: black}"
-                           "QPushButton:pressed { background-color: black }")
+            self.setStyleSheet("QPushButton { background-color: %s }"%(self.store.cell_colors["Dead-cell"]))
 
-            self.store.button_states[self.row][self.col] = 9
+            self.store.button_states[self.row][self.col] = 5
             
         elif selected_action == action4:
-
-            self.setStyleSheet("QPushButton { background-color: white }"
-                       "QPushButton:checked {background-color: blue}"
-                       "QPushButton:pressed { background-color: red }")
+            print("Free-cell")
+            self.setStyleSheet("QPushButton { background-color: %s }"%(self.store.cell_colors["Free-cell"]))
             self.store.button_states[self.row][self.col] = 0
+            self.store.sensor_cells[self.row][self.col] = 0
             print(self.store.button_states)
 
     def mousePressEvent(self, event):
