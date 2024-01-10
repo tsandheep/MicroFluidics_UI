@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
 
         self.tab_widget = QTabWidget(self)
         initial_text_edit = QTextEdit(self)
-        self.tab_widget.addTab(initial_text_edit, "Untitled")
+        self.tab_widget.addTab(initial_text_edit, "Tutorials")
 
         self.cmd = CMD()
         self.tab_widget.addTab(self.cmd, "Command")
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.onExit)
         file_menu.addAction(exit_action)
 
-        self.setWindowTitle('PyQt Window with Menu and Button')
+        self.setWindowTitle('SDU - MDB Project 2 - Microfluidics UI')
         self.setGeometry(100, 100, 400, 300)
 
     def showSaveFileDialog(self):
