@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication, QDesktopWidget, QMainWindow, QVBoxLayo
 from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtCore import Qt, QTimer
 import numpy as np
-
+import pdb
 from reservoirs import *
 
 class Cell(QPushButton):
@@ -18,13 +18,14 @@ class Cell(QPushButton):
         #if(self.store.button_states[row][col] )
 
         self.setStyleSheet("QPushButton { background-color: %s }"%(self.store.cell_colors["Free-cell"]))
+        self.disable_context_menu = False
         
     def contextMenuEvent(self, event):
         print(self.row, self.col)
         menu = QMenu(self)
         
         action1 = menu.addAction("Move Here")
-        
+        action_mix = menu.addAction("Move Here + Mix")
         action2 = menu.addAction("Sensor-cell")
         action3 = menu.addAction("Dead-cell")
         action4 = menu.addAction("Free-cell")
@@ -33,15 +34,29 @@ class Cell(QPushButton):
 
         if selected_action == action1:
             if(self.store.selected_cell):
-                from_row = self.store.selected_cell[0]
-                from_col = self.store.selected_cell[1]
+                if(self.store.button_states[self.row][self.col] != 9):
+                    from_row = self.store.selected_cell[0]
+                    from_col = self.store.selected_cell[1]
 
- 
-                clr = self.store.button_colors[from_row][from_col]
-                self.store.add_movement(self.store.selected_cell, (self.row, self.col), clr)
-                self.store.selected_cell = None
-                print("Move Here")
+     
+                    clr = self.store.button_colors[from_row][from_col]
+                    self.store.add_movement(self.store.selected_cell, (self.row, self.col), clr, "Move")
+                    self.store.selected_cell = None
+                    print("Move Here")
             
+        elif selected_action == action_mix:
+            if(self.store.selected_cell):
+                if(self.store.button_states[self.row][self.col] == 9):
+                    print(" Move and Mix ")
+                    from_row = self.store.selected_cell[0]
+                    from_col = self.store.selected_cell[1]
+
+
+                    clr = self.store.button_colors[from_row][from_col]
+                    self.store.add_movement(self.store.selected_cell, (self.row, self.col), clr, "Move_and_Mix")
+                    self.store.selected_cell = None
+
+                
             
         elif selected_action == action2:
             print("Sensor-cell")
@@ -72,12 +87,15 @@ class Cell(QPushButton):
             print(self.store.button_states)
 
     def mousePressEvent(self, event):
-        if(self.store.button_states[self.row][self.col] == 9):
-            self.store.selected_cell = (self.row, self.col)
+        if(event.button() == Qt.LeftButton):
+            if(self.store.button_states[self.row][self.col] == 9):
+                print("Droplet Selected", self.row, self.col)
+                self.store.selected_cell = (self.row, self.col)
         # Override mouse press event to prevent state change
         pass
 
     def mouseReleaseEvent(self, event):
+        
         # Override mouse release event to prevent state change
         pass
         

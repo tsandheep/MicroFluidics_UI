@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt, QTimer
 from AStarAlgo  import *
 import numpy as np
 import time
+import pdb
 
 class store(QWidget):
     def __init__(self):
@@ -30,7 +31,8 @@ class store(QWidget):
         self.cell_colors = {
             "Free-cell" : "#FFFFFF",
             "Dead-cell" : "#BBBBBB",
-            "Sensor-cell" : "#FFFF00"
+            "Sensor-cell" : "#FFFF00",
+            "Mixed-droplet" : "#964B00"
         }
                         
         self.button_colors = np.array([[self.cell_colors["Free-cell"] for _ in range(self.cols)] for _ in range(self.rows)])
@@ -43,7 +45,7 @@ class store(QWidget):
         
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.changeState)
-        self.timer.start(500)  # 5000 milliseconds = 5 seconds
+        self.timer.start(1000)  # 5000 milliseconds = 5 seconds
         
     def block_kernel(self, t):
         if(t[0] == 0 and t[1] == 0):
@@ -88,52 +90,123 @@ class store(QWidget):
         if( len(self.movement_list) ):
             print(self.movement_list)
         for i in self.movement_list:
+
             from_cell = i
             to_cell = self.movement_list[i]["to"]
-            clr = self.movement_list[i]["color"]
+            print(from_cell, to_cell)
+            print(self.button_states)
+            time.sleep(0.1)
+                
+            if(self.movement_list[i]["movement_type"] == "Move"):
+                from_cell = i
+                to_cell = self.movement_list[i]["to"]
+                clr = self.movement_list[i]["color"]
 
-            self.un_block_kernel(from_cell)
-            
-            this_path = astar(from_cell, to_cell, self.button_states)
-            if this_path:
-                print(self.button_states[this_path[0][0]][this_path[0][1]], self.sensor_cells[this_path[0][0]][this_path[0][1]])
-                if(self.sensor_cells[this_path[0][0]][this_path[0][1]]):
-                    print("Source - Sensor Cell")
-                    self.all_buttons[this_path[0][0]][this_path[0][1]].setStyleSheet("QPushButton { background-color: %s }"%(self.cell_colors["Sensor-cell"]))
+                self.un_block_kernel(from_cell)
+                
+                this_path = astar(from_cell, to_cell, self.button_states)
+                if this_path:
+                    print(self.button_states[this_path[0][0]][this_path[0][1]], self.sensor_cells[this_path[0][0]][this_path[0][1]])
+                    if(self.sensor_cells[this_path[0][0]][this_path[0][1]]):
+                        print("Source - Sensor Cell")
+                        self.all_buttons[this_path[0][0]][this_path[0][1]].setStyleSheet("QPushButton { background-color: %s }"%(self.cell_colors["Sensor-cell"]))
+                        
+                        pass
+                    else:
+
+                        print("Source - Free Cell")
+                        
+                        self.all_buttons[this_path[0][0]][this_path[0][1]].setStyleSheet("QPushButton { background-color: %s }"%(self.cell_colors["Free-cell"]))
+
+
+                    self.button_colors[this_path[0][0]][this_path[0][1]] = self.cell_colors["Free-cell"]
                     
-                    pass
+                                        
+                    self.button_states[this_path[0][0]][this_path[0][1]] = 0
+                        
+                    
+                    self.all_buttons[this_path[0][0]][this_path[0][1]].setChecked(False)
+                    self.all_buttons[this_path[0][0]][this_path[0][1]].setCheckable(False)
+                    
+                    self.all_buttons[this_path[1][0]][this_path[1][1]].setCheckable(True)
+                    self.all_buttons[this_path[1][0]][this_path[1][1]].setChecked(True)
+                    self.button_states[this_path[1][0]][this_path[1][1]] = 9
+
+
+                    self.button_colors[this_path[1][0]][this_path[1][1]] = clr
+                        
+                    self.all_buttons[this_path[1][0]][this_path[1][1]].setStyleSheet("QPushButton { background-color: %s }"%clr)
+                    if(this_path[1] != to_cell):
+                        new_movement_list[this_path[1]] = {"to": to_cell, "color" : self.movement_list[i]["color"], "movement_type" : self.movement_list[i]["movement_type"]} 
+                    self.block_kernel(this_path[1])
+                    
                 else:
-
-                    print("Source - Free Cell")
+                    new_movement_list[from_cell] = {"to": to_cell, "color" : self.movement_list[i]["color"], "movement_type" : self.movement_list[i]["movement_type"]} 
+                    self.block_kernel(from_cell)
                     
-                    self.all_buttons[this_path[0][0]][this_path[0][1]].setStyleSheet("QPushButton { background-color: %s }"%(self.cell_colors["Free-cell"]))
+            elif(self.movement_list[i]["movement_type"] == "Move_and_Mix"):
+                print("Move and Mix", self.movement_list[i]["movement_type"])
+                from_cell = i
+                to_cell = self.movement_list[i]["to"]
+                clr = self.movement_list[i]["color"]
 
-
-                self.button_colors[this_path[0][0]][this_path[0][1]] = self.cell_colors["Free-cell"]
+                self.un_block_kernel(to_cell)
+                self.un_block_kernel(from_cell)
                 
-                                    
-                self.button_states[this_path[0][0]][this_path[0][1]] = 0
+                to_cell_value = self.button_states[to_cell[0]][to_cell[1]]
+                self.button_states[to_cell[0]][to_cell[1]] = 0
+                
+                
+                
+                this_path = astar(from_cell, to_cell, self.button_states)
+                print(this_path)
+                if this_path:
+                    print(self.button_states[this_path[0][0]][this_path[0][1]], self.sensor_cells[this_path[0][0]][this_path[0][1]])
+                    if(self.sensor_cells[this_path[0][0]][this_path[0][1]]):
+                        print("Source - Sensor Cell")
+                        self.all_buttons[this_path[0][0]][this_path[0][1]].setStyleSheet("QPushButton { background-color: %s }"%(self.cell_colors["Sensor-cell"]))
+                        
+                        pass
+                    else:
+                        print("Source - Free Cell")
+                        
+                        self.all_buttons[this_path[0][0]][this_path[0][1]].setStyleSheet("QPushButton { background-color: %s }"%(self.cell_colors["Free-cell"]))
+
                     
-                
-                self.all_buttons[this_path[0][0]][this_path[0][1]].setChecked(False)
-                self.all_buttons[this_path[0][0]][this_path[0][1]].setCheckable(False)
-                
-                self.all_buttons[this_path[1][0]][this_path[1][1]].setCheckable(True)
-                self.all_buttons[this_path[1][0]][this_path[1][1]].setChecked(True)
-                self.button_states[this_path[1][0]][this_path[1][1]] = 9
-
-
-                self.button_colors[this_path[1][0]][this_path[1][1]] = clr
+                    self.button_colors[this_path[0][0]][this_path[0][1]] = self.cell_colors["Free-cell"]
                     
-                self.all_buttons[this_path[1][0]][this_path[1][1]].setStyleSheet("QPushButton { background-color: %s }"%clr)
-                if(this_path[1] != to_cell):
-                    new_movement_list[this_path[1]] = {"to": to_cell, "color" : self.movement_list[i]["color"]} 
-                self.block_kernel(this_path[1])
-                
-            else:
-                new_movement_list[from_cell] = {"to": to_cell, "color" : self.movement_list[i]["color"]} 
-                self.block_kernel(from_cell)
-            
+                                        
+                    self.button_states[this_path[0][0]][this_path[0][1]] = 0
+                        
+                    
+                    self.all_buttons[this_path[0][0]][this_path[0][1]].setChecked(False)
+                    self.all_buttons[this_path[0][0]][this_path[0][1]].setCheckable(False)
+                    
+                    self.all_buttons[this_path[1][0]][this_path[1][1]].setCheckable(True)
+                    self.all_buttons[this_path[1][0]][this_path[1][1]].setChecked(True)
+                    self.button_states[this_path[1][0]][this_path[1][1]] = 9
+
+
+                    self.button_colors[this_path[1][0]][this_path[1][1]] = clr
+                        
+                    self.all_buttons[this_path[1][0]][this_path[1][1]].setStyleSheet("QPushButton { background-color: %s }"%clr)
+                    if(this_path[1] != to_cell):
+                        new_movement_list[this_path[1]] = {"to": to_cell, "color" : self.movement_list[i]["color"], "movement_type" : self.movement_list[i]["movement_type"]}
+                        self.block_kernel(this_path[1])
+                        self.button_states[to_cell[0]][to_cell[1]] = to_cell_value
+                        self.block_kernel(to_cell)
+                    
+                    else:
+                        self.all_buttons[to_cell[0]][to_cell[1]].setStyleSheet("QPushButton { background-color: %s }"%(self.cell_colors["Mixed-droplet"]))
+                        self.button_colors[to_cell[0]][to_cell[1]] = self.cell_colors["Mixed-droplet"]
+                        self.block_kernel(this_path[1])
+                        self.button_states[to_cell[0]][to_cell[1]] = to_cell_value
+                    
+                    
+                else:
+                    new_movement_list[from_cell] = {"to": to_cell, "color" : self.movement_list[i]["color"], "movement_type" : self.movement_list[i]["movement_type"]} 
+                    self.block_kernel(from_cell)
+                    self.block_kernel(to_cell)
             
 
         self.movement_list = {}
@@ -150,8 +223,8 @@ class store(QWidget):
         self.button_states = temp
         """
 
-    def add_movement(self, move_from, move_to, color):
-        self.movement_list[move_from] = {"to": move_to, "color" : color}
+    def add_movement(self, move_from, move_to, color, movement_type):
+        self.movement_list[move_from] = {"to": move_to, "color" : color, "movement_type" : movement_type}
         print("movement list")
         print(self.movement_list)
         pass
